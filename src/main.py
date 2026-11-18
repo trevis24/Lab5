@@ -1,36 +1,49 @@
+
 from threading import Thread
 from hal import hal_keypad as keypad
 from hal import hal_lcd as LCD
-
-#Empty list to store sequence of keypad presses
-password = []
+import led_control
 
 lcd = LCD.lcd()
-lcd.lcd_clear()
 
-#Call back function invoked when any key on keypad is pressed
+# Called whenever a keypad button is pressed
 def key_pressed(key):
-    password.append(key)
 
-    print(password)
+    # REQ-02: Press 1 to blink LED
+    if key == 1:
+        led_control.delay = 1
+
+        lcd.lcd_clear()
+        lcd.lcd_display_string("LED Control", 1)
+        lcd.lcd_display_string("Blink LED", 2)
+
+    # REQ-03: Press 0 to stop LED
+    elif key == 0:
+        led_control.delay = 0
+        led_control.led.set_output(20, 0)
+
+        lcd.lcd_clear()
+        lcd.lcd_display_string("LED Control", 1)
+        lcd.lcd_display_string("OFF LED", 2)
 
 
 def main():
-    # Initialize LCD
-    lcd = LCD.lcd()
+
+    # REQ-01: Display starting menu
     lcd.lcd_clear()
+    lcd.lcd_display_string("LED Control", 1)
+    lcd.lcd_display_string("0:Off 1:Blink", 2)
 
-    # Display something on LCD
-    lcd.lcd_display_string("Lab 5", 1)
-
-    # Initialize the HAL keypad driver
+    # Initialise keypad
     keypad.init(key_pressed)
 
-    # Start the keypad scanning which will run forever in an infinite while(True) loop in a new Thread "keypad_thread"
+    # Start keypad thread
     keypad_thread = Thread(target=keypad.get_key)
     keypad_thread.start()
 
+    # Initialise LED control
+    led_control.led_control_init()
 
-# Main entry point
+
 if __name__ == "__main__":
     main()
